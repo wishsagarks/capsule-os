@@ -125,7 +125,7 @@ export function LandingPage() {
                 icon: Eye,
                 title: 'EXPLAINABLE',
                 desc: 'Understand the why behind every metric. Full transparency in computation.',
-                color: 'from-magenta-500 to-pink-600',
+                color: 'from-purple-500 to-fuchsia-600',
                 image: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=400'
               },
               {
