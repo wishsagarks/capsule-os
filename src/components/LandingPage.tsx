@@ -118,7 +118,8 @@ export function LandingPage() {
                 icon: Cpu,
                 title: 'DETERMINISTIC',
                 desc: 'Every insight is reproducible and traceable. No black boxes, no random outputs.',
-                color: 'from-cyan-500 to-blue-600'
+                color: 'from-cyan-500 to-blue-600',
+                image: 'https://images.pexels.com/photos/355948/pexels-photo-355948.jpeg?auto=compress&cs=tinysrgb&w=400'
               },
               {
                 icon: Eye,
@@ -131,13 +132,15 @@ export function LandingPage() {
                 icon: Lock,
                 title: 'PRIVATE',
                 desc: 'Your data stays yours. Self-hosted intelligence, zero external dependencies.',
-                color: 'from-green-500 to-emerald-600'
+                color: 'from-green-500 to-emerald-600',
+                image: 'https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg?auto=compress&cs=tinysrgb&w=400'
               },
               {
                 icon: Grid3x3,
                 title: 'MODULAR',
                 desc: 'Extensible architecture. Start with Spotify, expand infinitely.',
-                color: 'from-orange-500 to-red-600'
+                color: 'from-orange-500 to-red-600',
+                image: 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg?auto=compress&cs=tinysrgb&w=400'
               }
             ].map((principle, i) => (
               <motion.div
@@ -153,7 +156,7 @@ export function LandingPage() {
                 }}
               >
                 {principle.image && (
-                  <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity">
                     <img
                       src={principle.image}
                       alt={principle.title}
