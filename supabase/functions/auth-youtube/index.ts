@@ -48,19 +48,34 @@ Deno.serve(async (req: Request) => {
 
       const tokens = await tokenResponse.json();
 
+      // First check if user exists
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (userError || !userData) {
+        console.error("User not found:", userId, userError);
+        throw new Error("User not found");
+      }
+
+      // Upsert the token
       const { error } = await supabase
         .from("integration_tokens")
         .upsert({
           user_id: userId,
           integration_name: "youtube",
           access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
+          refresh_token: tokens.refresh_token || null,
           expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
         }, {
           onConflict: "user_id,integration_name",
         });
 
       if (error) {
+        console.error("Database upsert error:", error);
         throw error;
       }
 
