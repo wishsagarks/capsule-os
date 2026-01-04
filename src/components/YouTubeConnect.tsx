@@ -1,155 +1,102 @@
 import { useState, useEffect } from 'react';
-import { Youtube, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Youtube, Loader } from 'lucide-react';
 import { youtubeClient } from '../lib/youtube';
 import { useAuth } from '../contexts/AuthContext';
 
-export default function YouTubeConnect() {
+export default function YouTubeConnect({ onConnected }: { onConnected?: () => void }) {
   const { session } = useAuth();
-  const [isConnected, setIsConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    checkConnection();
-  }, [session]);
+    checkYouTubeConnection();
+  }, []);
 
-  const checkConnection = async () => {
+  const checkYouTubeConnection = async () => {
     if (!session?.user?.id) return;
 
     try {
-      setIsLoading(true);
-      const connected = await youtubeClient.isConnected(session.user.id);
-      setIsConnected(connected);
+      const isConnected = await youtubeClient.isConnected(session.user.id);
+      setConnected(isConnected);
     } catch (err) {
-      console.error('Failed to check YouTube connection:', err);
-    } finally {
-      setIsLoading(false);
+      console.error('Error checking YouTube connection:', err);
     }
   };
 
-  const handleConnect = async () => {
+  const handleYouTubeAuth = async () => {
     if (!session?.user?.id) return;
 
+    setLoading(true);
+    setError('');
+
     try {
-      setError(null);
       const authUrl = await youtubeClient.getAuthUrl(session.user.id);
       window.location.href = authUrl;
     } catch (err) {
-      console.error('Failed to initiate YouTube auth:', err);
-      setError('Failed to connect to YouTube. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to start authentication');
+      setLoading(false);
     }
   };
 
-  const handleDisconnect = async () => {
-    if (!session?.user?.id) return;
-
-    try {
-      setError(null);
-      await youtubeClient.disconnect(session.user.id);
-      setIsConnected(false);
-    } catch (err) {
-      console.error('Failed to disconnect YouTube:', err);
-      setError('Failed to disconnect YouTube. Please try again.');
-    }
-  };
-
-  const handleSync = async () => {
-    if (!session?.user?.id) return;
-
-    try {
-      setIsSyncing(true);
-      setError(null);
-      await youtubeClient.syncData(session.user.id);
-    } catch (err) {
-      console.error('Failed to sync YouTube data:', err);
-      setError('Failed to sync data. Please try again.');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  if (isLoading) {
+  if (connected) {
     return (
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-center">
-          <RefreshCw className="w-6 h-6 animate-spin text-red-600" />
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <Youtube className="w-6 h-6 text-red-600" />
+          <h3 className="font-semibold text-red-900">YouTube Connected</h3>
         </div>
+        <p className="text-red-700 text-sm mb-4">
+          Your YouTube account is connected. CapsuleOS is analyzing your content patterns.
+        </p>
+        <button
+          onClick={onConnected}
+          className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+        >
+          Go to Dashboard
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-            <Youtube className="w-6 h-6 text-red-600" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              YouTube
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {isConnected ? 'Connected' : 'Not connected'}
-            </p>
-          </div>
-        </div>
-        {isConnected ? (
-          <CheckCircle className="w-6 h-6 text-green-500" />
-        ) : (
-          <XCircle className="w-6 h-6 text-gray-400" />
-        )}
+    <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+      <div className="text-center mb-8">
+        <Youtube className="w-12 h-12 text-red-600 mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect YouTube</h2>
+        <p className="text-gray-600">
+          Link your YouTube account to get personalized insights about your content consumption
+        </p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
+        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
           {error}
         </div>
       )}
 
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        {isConnected
-          ? 'Your YouTube account is connected. We analyze your subscriptions, liked videos, and content preferences.'
-          : 'Connect your YouTube account to unlock insights about your content consumption patterns, learning preferences, and viewing habits.'}
-      </p>
-
-      <div className="flex gap-2">
-        {isConnected ? (
+      <button
+        onClick={handleYouTubeAuth}
+        disabled={loading}
+        className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:shadow-lg disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-3 transition"
+      >
+        {loading ? (
           <>
-            <button
-              onClick={handleSync}
-              disabled={isSyncing}
-              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Syncing...' : 'Sync Data'}
-            </button>
-            <button
-              onClick={handleDisconnect}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors"
-            >
-              Disconnect
-            </button>
+            <Loader className="w-5 h-5 animate-spin" />
+            Connecting...
           </>
         ) : (
-          <button
-            onClick={handleConnect}
-            className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-          >
-            <Youtube className="w-4 h-4" />
-            Connect YouTube
-          </button>
+          <>
+            <Youtube className="w-5 h-5" />
+            Connect with YouTube
+          </>
         )}
-      </div>
+      </button>
 
-      {isConnected && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            <strong>Privacy:</strong> We only access your subscriptions and liked videos (public data). We never access your watch history or private information.
-          </p>
-        </div>
-      )}
+      <p className="text-gray-500 text-xs text-center mt-6">
+        We use your YouTube data securely and never share it. Only aggregated metrics
+        are stored for analysis.
+      </p>
     </div>
   );
 }
