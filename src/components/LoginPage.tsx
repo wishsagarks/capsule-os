@@ -35,6 +35,9 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,7 +46,7 @@ export function LoginPage() {
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('US');
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } = useAuth();
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -113,6 +116,26 @@ export function LoginPage() {
     setDisplayName('');
     setPhone('');
     setCountry('US');
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      await resetPassword(resetEmail);
+      setResetSuccess(true);
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setResetSuccess(false);
+        setResetEmail('');
+      }, 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -371,6 +394,18 @@ export function LoginPage() {
             </button>
           </form>
 
+          {!isSignUp && (
+            <div className="text-center">
+              <button
+                onClick={() => setShowForgotPassword(true)}
+                className="text-xs font-black tracking-wider hover:underline transition-all duration-200"
+                style={{ color: currentTheme.colors.textSecondary }}
+              >
+                FORGOT PASSWORD?
+              </button>
+            </div>
+          )}
+
           <div className="text-center">
             <button
               onClick={() => {
@@ -442,6 +477,101 @@ export function LoginPage() {
           <p className="text-xs tracking-widest font-black" style={{ color: currentTheme.colors.secondary }}>SECURE • PRIVATE • DETERMINISTIC</p>
         </div>
       </motion.div>
+
+      {showForgotPassword && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowForgotPassword(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md border-4 rounded-2xl p-8"
+            style={{
+              backgroundColor: currentTheme.colors.surface,
+              borderColor: currentTheme.colors.border,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-2xl font-black text-white tracking-wider mb-4">RESET PASSWORD</h2>
+            <p className="text-sm mb-6" style={{ color: currentTheme.colors.textSecondary }}>
+              Enter your email address and we'll send you a link to reset your password.
+            </p>
+
+            {resetSuccess ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 border-2 bg-green-500/20 border-green-500 text-green-300 text-sm font-black rounded-xl mb-6"
+              >
+                Check your email for the password reset link!
+              </motion.div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="p-4 border-2 bg-red-500/20 border-red-500 text-red-300 text-xs font-black rounded-xl"
+                  >
+                    {error}
+                  </motion.div>
+                )}
+
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                  <input
+                    type="email"
+                    placeholder="EMAIL ADDRESS"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                    className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider placeholder:text-xs focus:outline-none transition-all duration-200"
+                    style={{
+                      backgroundColor: currentTheme.colors.background,
+                      borderColor: currentTheme.colors.border,
+                      color: currentTheme.colors.text,
+                    }}
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setError('');
+                      setResetEmail('');
+                    }}
+                    className="flex-1 text-white font-black py-3 border-2 text-sm tracking-widest rounded-xl transition-all duration-200"
+                    style={{
+                      backgroundColor: currentTheme.colors.background,
+                      borderColor: currentTheme.colors.border,
+                    }}
+                  >
+                    CANCEL
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 text-black font-black py-3 border-2 text-sm tracking-widest rounded-xl active:translate-y-1 transition-all duration-200 disabled:opacity-50"
+                    style={{
+                      backgroundColor: currentTheme.colors.primary,
+                      borderColor: currentTheme.colors.border,
+                      boxShadow: `0 4px 0 0 ${currentTheme.colors.secondary}`,
+                    }}
+                  >
+                    {loading ? 'SENDING...' : 'SEND LINK'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }

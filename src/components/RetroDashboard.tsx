@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, Zap, TrendingUp, BarChart3, Settings } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
-import { ProfileButton } from './ProfileButton';
+import { ProfileDropdown } from './ProfileDropdown';
 
 interface MetricCard {
   id: string;
@@ -75,7 +75,7 @@ export function RetroDashboard() {
           <div className="flex items-center gap-3">
             <div className="hidden md:flex items-center gap-3">
               <ThemeToggle />
-              <ProfileButton />
+              <ProfileDropdown />
             </div>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}

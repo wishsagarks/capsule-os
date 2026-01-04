@@ -17,6 +17,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, profile?: UserProfile) => Promise<{ data: any; error: any }>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -26,11 +28,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const ensureUserProfile = async (session: Session) => {
+    try {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', session.user.id)
+        .maybeSingle();
+
+      if (!existingUser) {
+        const metadata = session.user.user_metadata;
+        const provider = session.user.app_metadata?.provider || 'email';
+
+        const profileData = {
+          auth_user_id: session.user.id,
+          email: session.user.email,
+          display_name: metadata?.full_name || metadata?.name || metadata?.display_name || session.user.email?.split('@')[0] || 'User',
+          first_name: metadata?.given_name || metadata?.first_name || '',
+          last_name: metadata?.family_name || metadata?.last_name || '',
+          provider_type: provider,
+          avatar_url: metadata?.avatar_url || metadata?.picture,
+        };
+
+        const { error } = await supabase
+          .from('users')
+          .insert(profileData);
+
+        if (error) {
+          console.error('Error creating user profile:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring user profile:', error);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (isMounted) {
+        if (session) {
+          await ensureUserProfile(session);
+        }
         setSession(session);
         setLoading(false);
       }
@@ -38,8 +78,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (isMounted) {
+        if (session && _event === 'SIGNED_IN') {
+          await ensureUserProfile(session);
+        }
         setSession(session);
         setLoading(false);
       }
@@ -110,13 +153,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { data, error };
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw error;
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    if (error) throw error;
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setSession(null);
   };
 
   return (
-    <AuthContext.Provider value={{ session, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
+    <AuthContext.Provider value={{ session, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, updatePassword, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
-import { ProfileButton } from './ProfileButton';
+import { ProfileDropdown } from './ProfileDropdown';
 import { supabase } from '../lib/supabase';
 import { callEdgeFunction } from '../lib/api';
 
@@ -130,7 +130,7 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
   return (
     <div className="min-h-screen text-white overflow-hidden transition-colors duration-500" style={{ backgroundColor: currentTheme.colors.background }}>
       <div className="absolute top-6 right-6 z-50 flex items-center gap-3">
-        <ProfileButton />
+        <ProfileDropdown />
         <ThemeToggle />
       </div>
 

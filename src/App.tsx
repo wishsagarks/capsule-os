@@ -9,6 +9,7 @@ import { KnowYourself } from './components/KnowYourself';
 import { SpotifyAnalytics } from './components/SpotifyAnalytics';
 import { SetupPage } from './components/SetupPage';
 import { ProfilePage } from './components/ProfilePage';
+import { ResetPasswordPage } from './components/ResetPasswordPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -84,6 +85,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <ProtectedRoute>
+            <ResetPasswordPage />
           </ProtectedRoute>
         }
       />
