@@ -102,7 +102,9 @@ export class YouTubeClient {
     );
 
     if (!response.ok) {
-      throw new Error('Failed to complete YouTube authentication');
+      const errorText = await response.text();
+      console.error('YouTube callback error:', errorText);
+      throw new Error(`Failed to complete YouTube authentication: ${errorText}`);
     }
   }
 
