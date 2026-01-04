@@ -109,10 +109,11 @@ export class YouTubeClient {
   }
 
   async isConnected(userId: string): Promise<boolean> {
+    // Don't filter by user_id - let RLS handle it
+    // userId here is actually auth_user_id from session.user.id
     const { data, error } = await supabase
       .from('integration_tokens')
       .select('id')
-      .eq('user_id', userId)
       .eq('integration_name', 'youtube')
       .maybeSingle();
 
@@ -120,10 +121,10 @@ export class YouTubeClient {
   }
 
   async disconnect(userId: string): Promise<void> {
+    // Don't filter by user_id - let RLS handle it
     const { error } = await supabase
       .from('integration_tokens')
       .delete()
-      .eq('user_id', userId)
       .eq('integration_name', 'youtube');
 
     if (error) {
@@ -150,10 +151,10 @@ export class YouTubeClient {
   }
 
   async getSubscriptions(userId: string): Promise<YouTubeSubscription[]> {
+    // Don't filter by user_id - let RLS handle it
     const { data, error } = await supabase
       .from('youtube_subscriptions')
       .select('*')
-      .eq('user_id', userId)
       .order('interaction_count', { ascending: false });
 
     if (error) {
@@ -171,10 +172,10 @@ export class YouTubeClient {
   }
 
   async getRecentInteractions(userId: string, limit = 50): Promise<YouTubeInteraction[]> {
+    // Don't filter by user_id - let RLS handle it
     const { data, error } = await supabase
       .from('youtube_interactions')
       .select('*')
-      .eq('user_id', userId)
       .order('interaction_at', { ascending: false })
       .limit(limit);
 
@@ -210,10 +211,10 @@ export class YouTubeClient {
   async getQuotaUsage(userId: string): Promise<{ used: number; limit: number; percentage: number }> {
     const today = new Date().toISOString().split('T')[0];
 
+    // Don't filter by user_id - let RLS handle it
     const { data, error } = await supabase
       .from('youtube_quota_usage')
       .select('quota_used')
-      .eq('user_id', userId)
       .eq('date', today)
       .maybeSingle();
 

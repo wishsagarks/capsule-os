@@ -164,11 +164,26 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { userId } = await req.json();
+    const { userId: authUserId } = await req.json();
 
-    if (!userId) {
+    if (!authUserId) {
       throw new Error("userId is required");
     }
+
+    // Get the user_id from users table using auth_user_id
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("auth_user_id", authUserId)
+      .maybeSingle();
+
+    if (userError || !userData) {
+      console.error("User lookup failed:", userError);
+      throw new Error(`User not found for auth_user_id: ${authUserId}`);
+    }
+
+    const userId = userData.id;
+    console.log("Syncing data for user_id:", userId);
 
     const accessToken = await getValidAccessToken(supabase, userId);
 

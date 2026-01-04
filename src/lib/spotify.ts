@@ -229,3 +229,20 @@ export async function getListeningPersonality(token: string) {
     confidence: Math.min(100, (stats.uniqueArtists / 50) * 100),
   };
 }
+
+export class SpotifyClient {
+  async isConnected(userId: string): Promise<boolean> {
+    const { supabase } = await import('./supabase');
+
+    // Don't filter by user_id - let RLS handle it
+    const { data, error } = await supabase
+      .from('integration_tokens')
+      .select('id')
+      .eq('integration_name', 'spotify')
+      .maybeSingle();
+
+    return !error && !!data;
+  }
+}
+
+export const spotifyClient = new SpotifyClient();
