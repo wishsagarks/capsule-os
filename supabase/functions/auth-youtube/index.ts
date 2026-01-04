@@ -25,11 +25,26 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { userId, code, action } = await req.json();
-    console.log("Request params:", { userId, hasCode: !!code, action });
+    const { userId: authUserId, code, action } = await req.json();
+    console.log("Request params:", { authUserId, hasCode: !!code, action });
 
     if (action === "callback" && code) {
-      console.log("Processing callback for user:", userId);
+      console.log("Processing callback for auth user:", authUserId);
+
+      // Get the user_id from users table using auth_user_id
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("auth_user_id", authUserId)
+        .maybeSingle();
+
+      if (userError || !userData) {
+        console.error("User lookup failed:", userError);
+        throw new Error(`User not found for auth_user_id: ${authUserId}`);
+      }
+
+      const userId = userData.id;
+      console.log("Found user_id:", userId);
 
       const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
@@ -86,6 +101,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // For initial auth URL generation, authUserId is passed
     const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
     authUrl.searchParams.set("client_id", GOOGLE_CLIENT_ID!);
     authUrl.searchParams.set("redirect_uri", REDIRECT_URI!);
@@ -93,7 +109,7 @@ Deno.serve(async (req: Request) => {
     authUrl.searchParams.set("scope", "https://www.googleapis.com/auth/youtube.readonly");
     authUrl.searchParams.set("access_type", "offline");
     authUrl.searchParams.set("prompt", "consent");
-    authUrl.searchParams.set("state", userId);
+    authUrl.searchParams.set("state", authUserId);
 
     return new Response(
       JSON.stringify({ authUrl: authUrl.toString() }),
