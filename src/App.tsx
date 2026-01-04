@@ -5,6 +5,7 @@ import { LandingPage } from './components/LandingPage';
 import { LoginPage } from './components/LoginPage';
 import { InteractiveDashboard } from './components/InteractiveDashboard';
 import { SpotifyCallback } from './components/SpotifyCallback';
+import YouTubeCallback from './components/YouTubeCallback';
 import { KnowYourself } from './components/KnowYourself';
 import { SpotifyAnalytics } from './components/SpotifyAnalytics';
 import { SetupPage } from './components/SetupPage';
@@ -72,6 +73,7 @@ function AppRoutes() {
       <Route path="/know-yourself" element={<KnowYourself />} />
       <Route path="/spotify-analytics" element={<SpotifyAnalyticsRoute />} />
       <Route path="/spotify/callback" element={<SpotifyCallback />} />
+      <Route path="/youtube/callback" element={<YouTubeCallback />} />
       <Route
         path="/dashboard"
         element={
