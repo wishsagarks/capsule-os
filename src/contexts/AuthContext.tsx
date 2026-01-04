@@ -43,11 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const profileData = {
           auth_user_id: session.user.id,
           email: session.user.email,
-          display_name: metadata?.full_name || metadata?.name || metadata?.display_name || session.user.email?.split('@')[0] || 'User',
-          first_name: metadata?.given_name || metadata?.first_name || '',
-          last_name: metadata?.family_name || metadata?.last_name || '',
-          provider_type: provider,
-          avatar_url: metadata?.avatar_url || metadata?.picture,
+          display_name: metadata?.display_name || metadata?.full_name || metadata?.name || session.user.email?.split('@')[0] || 'User',
+          first_name: metadata?.first_name || metadata?.given_name || '',
+          last_name: metadata?.last_name || metadata?.family_name || '',
+          provider_type: metadata?.provider_type || provider,
+          avatar_url: metadata?.avatar_url || metadata?.picture || null,
           phone: metadata?.phone || null,
           country: metadata?.country || null,
         };
@@ -147,29 +147,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } : undefined,
       },
     });
-
-    if (error) return { data, error };
-
-    if (data.user && data.session && profile) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          auth_user_id: data.user.id,
-          email: data.user.email,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          display_name: profile.display_name,
-          phone: profile.phone,
-          country: profile.country,
-          provider_type: profile.provider_type,
-        });
-
-      if (profileError) {
-        console.error('Error creating user profile:', profileError);
-      }
-    }
 
     return { data, error };
   };
