@@ -48,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           last_name: metadata?.family_name || metadata?.last_name || '',
           provider_type: provider,
           avatar_url: metadata?.avatar_url || metadata?.picture,
+          phone: metadata?.phone || null,
+          country: metadata?.country || null,
         };
 
         const { error } = await supabase
