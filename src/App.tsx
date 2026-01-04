@@ -8,6 +8,7 @@ import { SpotifyCallback } from './components/SpotifyCallback';
 import { KnowYourself } from './components/KnowYourself';
 import { SpotifyAnalytics } from './components/SpotifyAnalytics';
 import { SetupPage } from './components/SetupPage';
+import { ProfilePage } from './components/ProfilePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -75,6 +76,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <InteractiveDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />

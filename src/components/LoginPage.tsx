@@ -1,10 +1,35 @@
 import { useState } from 'react';
-import { Zap, ArrowLeft, Mail, Lock, User } from 'lucide-react';
+import { Zap, ArrowLeft, Mail, Lock, User, Phone, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+
+const COUNTRIES = [
+  { code: 'US', name: 'United States' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'IN', name: 'India' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'CN', name: 'China' },
+  { code: 'KR', name: 'South Korea' },
+  { code: 'SG', name: 'Singapore' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'SE', name: 'Sweden' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'FI', name: 'Finland' },
+  { code: 'OTHER', name: 'Other' },
+];
 
 export function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -13,6 +38,11 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [country, setCountry] = useState('US');
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
@@ -42,7 +72,21 @@ export function LoginPage() {
         if (password.length < 6) {
           throw new Error('Password must be at least 6 characters');
         }
-        await signUpWithEmail(email, password);
+        if (!firstName || !lastName || !displayName) {
+          throw new Error('Please fill in all required fields');
+        }
+
+        const { data, error: signUpError } = await signUpWithEmail(email, password, {
+          first_name: firstName,
+          last_name: lastName,
+          display_name: displayName,
+          phone: phone || null,
+          country,
+          provider_type: 'email',
+        });
+
+        if (signUpError) throw signUpError;
+
         setError('Check your email for confirmation link');
         setLoading(false);
       } else {
@@ -57,6 +101,18 @@ export function LoginPage() {
 
   const handleBack = () => {
     navigate('/');
+  };
+
+  const resetForm = () => {
+    setError('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setFirstName('');
+    setLastName('');
+    setDisplayName('');
+    setPhone('');
+    setCountry('US');
   };
 
   return (
@@ -115,7 +171,7 @@ export function LoginPage() {
           <p className="text-xs tracking-widest font-black" style={{ color: currentTheme.colors.primary }}>PERSONAL INTELLIGENCE NEXUS</p>
         </div>
 
-        <div className="space-y-6 border-4 rounded-2xl p-8" style={{ backgroundColor: `${currentTheme.colors.surface}cc`, borderColor: currentTheme.colors.border }}>
+        <div className="space-y-6 border-4 rounded-2xl p-8 max-h-[calc(100vh-300px)] overflow-y-auto" style={{ backgroundColor: `${currentTheme.colors.surface}cc`, borderColor: currentTheme.colors.border }}>
           <div className="text-center mb-6">
             <h2 className="text-xl font-black text-white tracking-wider mb-2">SECURE AUTHENTICATION</h2>
             <p className="text-sm" style={{ color: currentTheme.colors.textSecondary }}>
@@ -138,6 +194,108 @@ export function LoginPage() {
           )}
 
           <form onSubmit={handleEmailAuth} className="space-y-4">
+            {isSignUp && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                      <input
+                        type="text"
+                        placeholder="FIRST NAME"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required={isSignUp}
+                        className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider placeholder:text-xs focus:outline-none transition-all duration-200"
+                        style={{
+                          backgroundColor: currentTheme.colors.background,
+                          borderColor: currentTheme.colors.border,
+                          color: currentTheme.colors.text,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                      <input
+                        type="text"
+                        placeholder="LAST NAME"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required={isSignUp}
+                        className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider placeholder:text-xs focus:outline-none transition-all duration-200"
+                        style={{
+                          backgroundColor: currentTheme.colors.background,
+                          borderColor: currentTheme.colors.border,
+                          color: currentTheme.colors.text,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                    <input
+                      type="text"
+                      placeholder="DISPLAY NAME"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      required={isSignUp}
+                      className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider placeholder:text-xs focus:outline-none transition-all duration-200"
+                      style={{
+                        backgroundColor: currentTheme.colors.background,
+                        borderColor: currentTheme.colors.border,
+                        color: currentTheme.colors.text,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                    <select
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider focus:outline-none transition-all duration-200 appearance-none"
+                      style={{
+                        backgroundColor: currentTheme.colors.background,
+                        borderColor: currentTheme.colors.border,
+                        color: currentTheme.colors.text,
+                      }}
+                    >
+                      {COUNTRIES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                    <input
+                      type="tel"
+                      placeholder="PHONE (OPTIONAL)"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider placeholder:text-xs focus:outline-none transition-all duration-200"
+                      style={{
+                        backgroundColor: currentTheme.colors.background,
+                        borderColor: currentTheme.colors.border,
+                        color: currentTheme.colors.text,
+                      }}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
             <div>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
@@ -217,10 +375,7 @@ export function LoginPage() {
             <button
               onClick={() => {
                 setIsSignUp(!isSignUp);
-                setError('');
-                setEmail('');
-                setPassword('');
-                setConfirmPassword('');
+                resetForm();
               }}
               className="text-sm font-black tracking-wider hover:underline transition-all duration-200"
               style={{ color: currentTheme.colors.secondary }}

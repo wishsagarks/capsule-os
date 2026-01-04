@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, Zap, TrendingUp, BarChart3, Settings } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
+import { ProfileButton } from './ProfileButton';
 
 interface MetricCard {
   id: string;
@@ -70,12 +72,18 @@ export function RetroDashboard() {
             </div>
           </div>
 
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden w-12 h-12 bg-white border-2 border-black text-black hover:bg-cyan-500 transition-all duration-200"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
+              <ThemeToggle />
+              <ProfileButton />
+            </div>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden w-12 h-12 bg-white border-2 border-black text-black hover:bg-cyan-500 transition-all duration-200"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </motion.div>
 
