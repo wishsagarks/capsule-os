@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap, ArrowRight } from 'lucide-react';
+import { Zap, ArrowLeft, Mail, Lock, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -9,7 +9,11 @@ import { useNavigate } from 'react-router-dom';
 export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signInWithGoogle } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -25,12 +29,53 @@ export function LoginPage() {
     }
   };
 
-  const handleSkip = () => {
-    navigate('/know-yourself');
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      if (isSignUp) {
+        if (password !== confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters');
+        }
+        await signUpWithEmail(email, password);
+        setError('Check your email for confirmation link');
+        setLoading(false);
+      } else {
+        await signInWithEmail(email, password);
+        navigate('/setup');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
+      setLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    navigate('/');
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 overflow-hidden transition-colors duration-500" style={{ backgroundColor: currentTheme.colors.background }}>
+      <div className="absolute top-6 left-6 z-50">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 font-black text-sm tracking-wider transition-all duration-200 hover:scale-105"
+          style={{
+            backgroundColor: currentTheme.colors.surface,
+            borderColor: currentTheme.colors.border,
+            color: currentTheme.colors.primary,
+          }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          BACK
+        </button>
+      </div>
+
       <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>
@@ -73,18 +118,127 @@ export function LoginPage() {
         <div className="space-y-6 border-4 rounded-2xl p-8" style={{ backgroundColor: `${currentTheme.colors.surface}cc`, borderColor: currentTheme.colors.border }}>
           <div className="text-center mb-6">
             <h2 className="text-xl font-black text-white tracking-wider mb-2">SECURE AUTHENTICATION</h2>
-            <p className="text-sm" style={{ color: currentTheme.colors.textSecondary }}>Sign in with your Google account to continue</p>
+            <p className="text-sm" style={{ color: currentTheme.colors.textSecondary }}>
+              {isSignUp ? 'Create your account to continue' : 'Sign in to access your personal intelligence'}
+            </p>
           </div>
 
           {error && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="p-4 border-2 bg-red-500/20 border-red-500 text-red-300 text-xs font-black rounded-lg"
+              className={`p-4 border-2 rounded-lg text-xs font-black ${
+                error.includes('Check your email')
+                  ? 'bg-green-500/20 border-green-500 text-green-300'
+                  : 'bg-red-500/20 border-red-500 text-red-300'
+              }`}
             >
               {error}
             </motion.div>
           )}
+
+          <form onSubmit={handleEmailAuth} className="space-y-4">
+            <div>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                <input
+                  type="email"
+                  placeholder="EMAIL ADDRESS"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider placeholder:text-xs focus:outline-none transition-all duration-200"
+                  style={{
+                    backgroundColor: currentTheme.colors.background,
+                    borderColor: currentTheme.colors.border,
+                    color: currentTheme.colors.text,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                <input
+                  type="password"
+                  placeholder="PASSWORD"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider placeholder:text-xs focus:outline-none transition-all duration-200"
+                  style={{
+                    backgroundColor: currentTheme.colors.background,
+                    borderColor: currentTheme.colors.border,
+                    color: currentTheme.colors.text,
+                  }}
+                />
+              </div>
+            </div>
+
+            {isSignUp && (
+              <div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: currentTheme.colors.primary }} />
+                  <input
+                    type="password"
+                    placeholder="CONFIRM PASSWORD"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full pl-12 pr-4 py-3 border-2 rounded-xl font-black text-sm tracking-wider placeholder:text-xs focus:outline-none transition-all duration-200"
+                    style={{
+                      backgroundColor: currentTheme.colors.background,
+                      borderColor: currentTheme.colors.border,
+                      color: currentTheme.colors.text,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full text-black font-black py-4 border-2 text-sm tracking-widest rounded-xl active:translate-y-1 transition-all duration-200 disabled:opacity-50"
+              style={{
+                backgroundColor: currentTheme.colors.primary,
+                borderColor: currentTheme.colors.border,
+                boxShadow: `0 4px 0 0 ${currentTheme.colors.secondary}`,
+              }}
+            >
+              {loading ? 'AUTHENTICATING...' : isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN'}
+            </button>
+          </form>
+
+          <div className="text-center">
+            <button
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError('');
+                setEmail('');
+                setPassword('');
+                setConfirmPassword('');
+              }}
+              className="text-sm font-black tracking-wider hover:underline transition-all duration-200"
+              style={{ color: currentTheme.colors.secondary }}
+            >
+              {isSignUp ? 'ALREADY HAVE AN ACCOUNT? SIGN IN' : "DON'T HAVE AN ACCOUNT? SIGN UP"}
+            </button>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t-2" style={{ borderColor: currentTheme.colors.border }}></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="px-2 text-xs font-black tracking-widest" style={{ backgroundColor: currentTheme.colors.surface, color: currentTheme.colors.textSecondary }}>
+                OR
+              </span>
+            </div>
+          </div>
 
           <button
             onClick={handleGoogleSignIn}
@@ -115,30 +269,6 @@ export function LoginPage() {
               />
             </svg>
             {loading ? 'AUTHENTICATING...' : 'SIGN IN WITH GOOGLE'}
-          </button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2" style={{ borderColor: currentTheme.colors.border }}></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="px-2 text-xs font-black tracking-widest" style={{ backgroundColor: currentTheme.colors.surface, color: currentTheme.colors.textSecondary }}>
-                OR
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleSkip}
-            className="w-full font-black py-4 border-2 text-sm tracking-widest rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
-            style={{
-              backgroundColor: 'transparent',
-              borderColor: currentTheme.colors.border,
-              color: currentTheme.colors.primary,
-            }}
-          >
-            SKIP & EXPLORE DEMO
-            <ArrowRight className="w-4 h-4" />
           </button>
 
           <div className="pt-4 border-t-2" style={{ borderColor: currentTheme.colors.border }}>

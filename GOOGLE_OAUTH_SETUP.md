@@ -2,7 +2,16 @@
 
 To enable Google Sign-In for CapsuleOS, you need to configure Google OAuth in your Supabase project.
 
-## Step 1: Configure Google Cloud Console
+## Step 1: Configure Supabase Email Authentication
+
+1. Go to your [Supabase Dashboard](https://app.supabase.com/)
+2. Select your project
+3. Navigate to **Authentication** > **Providers** > **Email**
+4. **IMPORTANT**: Disable "Confirm email" option
+   - This allows users to sign in immediately without email verification
+5. Save the configuration
+
+## Step 2: Configure Google Cloud Console
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
@@ -22,7 +31,7 @@ To enable Google Sign-In for CapsuleOS, you need to configure Google OAuth in yo
      ```
 7. Copy the **Client ID** and **Client Secret**
 
-## Step 2: Configure Supabase
+## Step 3: Configure Supabase Google Provider
 
 1. Go to your [Supabase Dashboard](https://app.supabase.com/)
 2. Select your project
@@ -31,20 +40,29 @@ To enable Google Sign-In for CapsuleOS, you need to configure Google OAuth in yo
 5. Paste your **Client ID** and **Client Secret** from Google Cloud Console
 6. Save the configuration
 
-## Step 3: Update Redirect URLs (if needed)
+## Step 4: Update Redirect URLs (if needed)
 
 If you're deploying to a custom domain, make sure to:
 
 1. Add your custom domain to authorized redirect URIs in Google Cloud Console
 2. Update the `redirectTo` parameter in the code if necessary
 
-## Step 4: Test the Integration
+## Step 5: Test the Integration
 
+### Testing Email/Password Authentication:
+1. Run your application
+2. Click "Sign In" on the landing page
+3. Click "DON'T HAVE AN ACCOUNT? SIGN UP"
+4. Enter your email and password
+5. Click "CREATE ACCOUNT"
+6. You should be able to sign in immediately (no email confirmation required)
+
+### Testing Google Authentication:
 1. Run your application
 2. Click "Sign In" on the landing page
 3. Click "SIGN IN WITH GOOGLE"
 4. Complete the Google authentication flow
-5. You should be redirected back to the dashboard
+5. You should be redirected to the Spotify setup page
 
 ## Troubleshooting
 

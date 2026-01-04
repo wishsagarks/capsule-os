@@ -7,6 +7,7 @@ import { InteractiveDashboard } from './components/InteractiveDashboard';
 import { SpotifyCallback } from './components/SpotifyCallback';
 import { KnowYourself } from './components/KnowYourself';
 import { SpotifyAnalytics } from './components/SpotifyAnalytics';
+import { SetupPage } from './components/SetupPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -56,7 +57,15 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route
         path="/login"
-        element={session ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+        element={session ? <Navigate to="/setup" replace /> : <LoginPage />}
+      />
+      <Route
+        path="/setup"
+        element={
+          <ProtectedRoute>
+            <SetupPage onSetupComplete={() => window.location.href = '/dashboard'} />
+          </ProtectedRoute>
+        }
       />
       <Route path="/know-yourself" element={<KnowYourself />} />
       <Route path="/spotify-analytics" element={<SpotifyAnalyticsRoute />} />
