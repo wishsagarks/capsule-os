@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isMounted) return;
 
         try {
-          if (session && _event === 'SIGNED_IN') {
+          if (session) {
             await ensureUserProfile(session);
           }
           setSession(session);
@@ -150,7 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) return { data, error };
 
-    if (data.user && profile) {
+    if (data.user && data.session && profile) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const { error: profileError } = await supabase
         .from('users')
         .insert({
