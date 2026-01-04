@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Music, Sparkles, Loader, Zap, ArrowRight, Shield, TrendingUp, Brain, Radio } from 'lucide-react';
+import { Music, Youtube, Sparkles, Loader, Zap, ArrowRight, Shield, TrendingUp, Brain, Radio } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -7,6 +7,8 @@ import { ThemeToggle } from './ThemeToggle';
 import { ProfileDropdown } from './ProfileDropdown';
 import { supabase } from '../lib/supabase';
 import { callEdgeFunction } from '../lib/api';
+import { SpotifyConnect } from './SpotifyConnect';
+import YouTubeConnect from './YouTubeConnect';
 
 const SPOTIFY_CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 const SPOTIFY_REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI;
@@ -15,6 +17,7 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
   const { session } = useAuth();
   const { currentTheme } = useTheme();
   const [hasSpotify, setHasSpotify] = useState(false);
+  const [hasYouTube, setHasYouTube] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState('');
@@ -63,13 +66,16 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
     if (!session) return;
 
     try {
-      const response = await supabase
+      const { data: integrations } = await supabase
         .from('integration_tokens')
-        .select('id')
-        .eq('integration_name', 'spotify')
-        .maybeSingle();
+        .select('integration_name')
+        .in('integration_name', ['spotify', 'youtube']);
 
-      setHasSpotify(!!response.data);
+      const spotifyConnected = integrations?.some(i => i.integration_name === 'spotify') || false;
+      const youtubeConnected = integrations?.some(i => i.integration_name === 'youtube') || false;
+
+      setHasSpotify(spotifyConnected);
+      setHasYouTube(youtubeConnected);
     } catch (err) {
       console.error('Error checking setup:', err);
     } finally {
@@ -167,7 +173,7 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
           </motion.div>
         </nav>
 
-        {hasSpotify ? (
+        {(hasSpotify || hasYouTube) ? (
           <section className="container mx-auto px-6 py-12">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -189,7 +195,7 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
                 </div>
               </motion.div>
 
-              <h1 className="text-5xl font-black tracking-wider mb-6">CONNECTION ESTABLISHED</h1>
+              <h1 className="text-5xl font-black tracking-wider mb-6">INTEGRATIONS CONFIGURED</h1>
               <div
                 className="w-48 h-1 mx-auto mb-8 rounded-full"
                 style={{
@@ -197,10 +203,16 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
                 }}
               ></div>
 
-              <p className="text-xl mb-12 leading-relaxed" style={{ color: currentTheme.colors.textSecondary }}>
-                Your Spotify integration is active. CapsuleOS is now analyzing your listening patterns
-                and generating personalized intelligence capsules.
+              <p className="text-xl mb-8 leading-relaxed" style={{ color: currentTheme.colors.textSecondary }}>
+                {hasSpotify && hasYouTube ? 'Both Spotify and YouTube are connected. CapsuleOS is analyzing your cross-platform behavior patterns.' :
+                 hasSpotify ? 'Your Spotify integration is active. Connect YouTube for cross-platform insights.' :
+                 'Your YouTube integration is active. Connect Spotify for cross-platform insights.'}
               </p>
+
+              <div className="grid md:grid-cols-2 gap-6 mb-12 max-w-3xl mx-auto">
+                <SpotifyConnect />
+                <YouTubeConnect />
+              </div>
 
               <button
                 onClick={onSetupComplete}
@@ -230,22 +242,22 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
                     backgroundImage: `linear-gradient(90deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary}, ${currentTheme.colors.primary})`,
                   }}
                 >
-                  CONNECT YOUR MUSIC
+                  CONNECT YOUR PLATFORMS
                 </h1>
                 <h2 className="text-3xl md:text-4xl font-black tracking-tighter mb-8">
                   UNLOCK BEHAVIORAL INTELLIGENCE
                 </h2>
                 <p className="text-xl max-w-3xl mx-auto mb-12 leading-relaxed" style={{ color: currentTheme.colors.textSecondary }}>
-                  Link your Spotify account to begin analyzing your
+                  Connect Spotify and YouTube to unlock cross-platform behavioral intelligence. Analyze your
                   <span style={{ color: currentTheme.colors.primary }}> listening patterns</span>,
-                  <span style={{ color: currentTheme.colors.secondary }}> temporal habits</span>, and
-                  <span style={{ color: currentTheme.colors.primary }}> musical evolution</span>.
+                  <span style={{ color: currentTheme.colors.secondary }}> content preferences</span>, and
+                  <span style={{ color: currentTheme.colors.primary }}> digital habits</span>.
                 </p>
               </motion.div>
             </section>
 
             <section className="container mx-auto px-6 py-12">
-              <div className="max-w-2xl mx-auto">
+              <div className="max-w-4xl mx-auto">
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -256,54 +268,10 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
                   </motion.div>
                 )}
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="border-4 rounded-2xl p-8 text-center"
-                  style={{
-                    backgroundColor: `${currentTheme.colors.surface}cc`,
-                    borderColor: currentTheme.colors.border,
-                  }}
-                >
-                  <div className="mb-8">
-                    <div
-                      className="inline-block w-16 h-16 rounded-xl border-2 mb-4"
-                      style={{
-                        background: 'linear-gradient(135deg, #1DB954, #1ed760)',
-                        borderColor: currentTheme.colors.border,
-                      }}
-                    >
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Music className="w-8 h-8 text-black" />
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-black tracking-wider mb-2">SPOTIFY INTEGRATION</h3>
-                    <p className="text-sm" style={{ color: currentTheme.colors.textSecondary }}>
-                      Securely connect via OAuth 2.0
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={handleSpotifyAuth}
-                    disabled={authLoading}
-                    className="w-full text-black font-black py-4 border-2 text-sm tracking-widest rounded-xl active:translate-y-1 transition-all duration-200 disabled:opacity-50 mb-6"
-                    style={{
-                      backgroundColor: '#1DB954',
-                      borderColor: currentTheme.colors.border,
-                      boxShadow: `0 4px 0 0 ${currentTheme.colors.border}`,
-                    }}
-                  >
-                    {authLoading ? 'CONNECTING...' : 'CONNECT SPOTIFY'}
-                  </button>
-
-                  <div className="pt-6 border-t-2" style={{ borderColor: currentTheme.colors.border }}>
-                    <p className="text-xs leading-relaxed" style={{ color: currentTheme.colors.textSecondary }}>
-                      We only access listening history and preferences. Your data is encrypted and never shared.
-                      You can revoke access anytime.
-                    </p>
-                  </div>
-                </motion.div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <SpotifyConnect />
+                  <YouTubeConnect />
+                </div>
               </div>
             </section>
 

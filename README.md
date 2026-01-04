@@ -90,14 +90,14 @@ Each metric:
 
 CapsuleOS supports any behavioral data source. Current integrations available:
 
-| Source | Category | Behavioral Signals |
-|--------|----------|-------------------|
-| **Spotify** | Music | Taste evolution, discovery patterns, listening consistency |
-| **GitHub** | Developer | Coding cadence, language diversity, contribution rhythm |
-| **YouTube** | Content | Learning vs entertainment ratio, topic affinity |
-| **Reading Platforms** | Content | Shallow vs deep reading, topic breadth |
-| **Fitness Tracker** | Wellness | Activity patterns, consistency, intensity |
-| **Calendar** | Productivity | Time allocation, focus blocks, fragmentation |
+| Source | Category | Status | Behavioral Signals |
+|--------|----------|--------|-------------------|
+| **Spotify** | Music | ✅ Live | Taste evolution, discovery patterns, listening consistency |
+| **YouTube** | Content | ✅ Live | Content identity, intellectual diet, subscription health |
+| **GitHub** | Developer | 🔜 Coming | Coding cadence, language diversity, contribution rhythm |
+| **Reading Platforms** | Content | 🔜 Coming | Shallow vs deep reading, topic breadth |
+| **Fitness Tracker** | Wellness | 🔜 Coming | Activity patterns, consistency, intensity |
+| **Calendar** | Productivity | 🔜 Coming | Time allocation, focus blocks, fragmentation |
 
 **Future**: Twitter/X, Notion, Obsidian, Goodreads, Letterboxd, Wakatime, Typeform, etc.
 
@@ -164,16 +164,25 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 # Optional (for integrations)
 VITE_SPOTIFY_CLIENT_ID=your-client-id
-VITE_GITHUB_TOKEN=your-github-token
+VITE_SPOTIFY_REDIRECT_URI=your-redirect-uri
+
+# YouTube integration (Google OAuth)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:5173/youtube/callback
 ```
 
 ### Supabase Configuration
 1. Create Supabase project
 2. Run migrations:
    ```sql
-   -- Created automatically via migrations/002_*.sql
+   -- Created automatically via migrations/
    ```
 3. Set Edge Function secrets (automatic environment configuration)
+
+### Integration Setup Guides
+- **Spotify**: See [SPOTIFY_OAUTH_SETUP.md](SPOTIFY_OAUTH_SETUP.md)
+- **YouTube**: See [YOUTUBE_OAUTH_SETUP.md](YOUTUBE_OAUTH_SETUP.md)
 
 ## Project Structure
 
@@ -197,13 +206,16 @@ src/
 
 supabase/
 ├── migrations/
-│   ├── 001_*_initial_schema.sql   # Old (Spotify)
-│   └── 002_*_generic_schema.sql   # New (Generic)
+│   ├── 001_*_initial_schema.sql        # Initial setup
+│   ├── 002_*_generic_schema.sql        # Generic intelligence schema
+│   └── *_youtube_integration.sql       # YouTube tables & RLS
 └── functions/
-    ├── auth-spotify/              # OAuth token exchange
-    ├── spotify-sync/              # Fetch & aggregate
-    ├── generate-capsule/          # LLM orchestration
-    └── dashboard/                 # Data retrieval
+    ├── auth-spotify/                   # Spotify OAuth
+    ├── auth-youtube/                   # YouTube OAuth
+    ├── spotify-sync/                   # Spotify data sync
+    ├── youtube-sync/                   # YouTube data sync
+    ├── generate-capsule/               # LLM orchestration
+    └── dashboard/                      # Data retrieval
 ```
 
 ## Technology Stack
@@ -353,20 +365,23 @@ Stateful (Persistent Storage)
 
 ## Roadmap
 
-### Phase 1 (MVP - Current)
+### Phase 1 (MVP - Complete ✓)
 - [x] 3D interactive dashboard with retro UI
 - [x] Generic schema for any data source
-- [x] Spotify integration reference implementation
+- [x] Spotify integration (music behavior)
 - [x] Daily insight capsule generation
 - [x] Metric computation + trend analysis
 
-### Phase 2 (Coming Soon)
+### Phase 2 (Live Now ✓)
+- [x] **YouTube integration** (content consumption patterns)
+- [x] **Cross-platform intelligence** (Spotify + YouTube synthesis)
+- [x] Content identity classification
+- [x] Intellectual diet analysis
+- [x] Subscription health tracking
 - [ ] GitHub integration (developer patterns)
-- [ ] YouTube integration (content consumption)
 - [ ] Reading platforms (learning analysis)
 - [ ] Advanced trend prediction (30/60/90 day)
 - [ ] Custom metric definitions (user-defined)
-- [ ] Multi-language LLM prompts
 
 ### Phase 3 (Future Vision)
 - [ ] Cross-source correlation analysis
@@ -395,13 +410,13 @@ This is a personal project showcasing:
 ## FAQ
 
 ### Is this music analytics?
-**No.** Spotify is just one optional source. CapsuleOS treats it equally with code, fitness, reading, productivity data.
+**No.** Spotify is just one optional source. CapsuleOS treats it equally with YouTube, code, fitness, reading, productivity data.
 
-### What if I don't use Spotify?
+### What if I don't use Spotify or YouTube?
 CapsuleOS works with any data sources. You can:
-- Use only GitHub + Calendar
-- Mix Reading + Fitness + YouTube
-- Connect just one source
+- Use only Spotify or only YouTube
+- Combine Spotify + YouTube for cross-platform insights
+- Wait for future integrations (GitHub, Goodreads, etc.)
 - Add custom data via API
 
 ### How often are insights generated?

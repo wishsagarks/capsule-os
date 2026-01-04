@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Zap, Eye, Lock, TrendingUp, Grid3x3, Cpu, Database, Code2 } from 'lucide-react';
+import { Zap, Eye, Lock, TrendingUp, Grid3x3, Cpu, Database, Code2, Music, Youtube } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -138,7 +138,7 @@ export function LandingPage() {
               {
                 icon: Grid3x3,
                 title: 'MODULAR',
-                desc: 'Extensible architecture. Start with Spotify, expand infinitely.',
+                desc: 'Extensible architecture. Connect Spotify and YouTube, expand infinitely.',
                 color: 'from-orange-500 to-red-600',
                 image: 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg?auto=compress&cs=tinysrgb&w=400'
               }
@@ -187,7 +187,118 @@ export function LandingPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h3 className="text-4xl font-black tracking-widest mb-4">ARCHITECTURE</h3>
+            <h3 className="text-4xl font-black tracking-widest mb-4">SUPPORTED INTEGRATIONS</h3>
+            <div
+              className="w-32 h-1 mx-auto mb-6 rounded-full"
+              style={{
+                background: `linear-gradient(90deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary})`,
+              }}
+            ></div>
+            <p className="text-xl max-w-3xl mx-auto" style={{ color: currentTheme.colors.textSecondary }}>
+              Connect your digital platforms to unlock cross-platform behavioral intelligence
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-32">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="border-4 rounded-2xl p-8 text-center transition-all hover:scale-105"
+              style={{
+                backgroundColor: currentTheme.colors.surface,
+                borderColor: currentTheme.colors.border,
+              }}
+            >
+              <div
+                className="w-20 h-20 mx-auto rounded-xl border-2 flex items-center justify-center mb-6"
+                style={{
+                  background: 'linear-gradient(135deg, #1DB954, #1ed760)',
+                  borderColor: currentTheme.colors.border,
+                }}
+              >
+                <Music className="w-10 h-10 text-black" />
+              </div>
+              <h4 className="text-2xl font-black tracking-wider mb-4">SPOTIFY</h4>
+              <p className="text-sm mb-6" style={{ color: currentTheme.colors.textSecondary }}>
+                Analyze listening patterns, discover new music, track taste evolution, and understand your musical identity.
+              </p>
+              <div className="space-y-2 text-left">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.colors.primary }}></div>
+                  <span className="text-sm">Discovery Index</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.colors.primary }}></div>
+                  <span className="text-sm">Mood & Energy Patterns</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.colors.primary }}></div>
+                  <span className="text-sm">Genre Diversity Analysis</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.colors.primary }}></div>
+                  <span className="text-sm">Temporal Listening Habits</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="border-4 rounded-2xl p-8 text-center transition-all hover:scale-105"
+              style={{
+                backgroundColor: currentTheme.colors.surface,
+                borderColor: currentTheme.colors.border,
+              }}
+            >
+              <div
+                className="w-20 h-20 mx-auto rounded-xl border-2 flex items-center justify-center mb-6"
+                style={{
+                  background: 'linear-gradient(135deg, #FF0000, #cc0000)',
+                  borderColor: currentTheme.colors.border,
+                }}
+              >
+                <Youtube className="w-10 h-10 text-white" />
+              </div>
+              <h4 className="text-2xl font-black tracking-wider mb-4">YOUTUBE</h4>
+              <p className="text-sm mb-6" style={{ color: currentTheme.colors.textSecondary }}>
+                Understand content consumption, track learning patterns, analyze subscription health, and discover viewing habits.
+              </p>
+              <div className="space-y-2 text-left">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.colors.secondary }}></div>
+                  <span className="text-sm">Content Identity Analysis</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.colors.secondary }}></div>
+                  <span className="text-sm">Intellectual Diet Breakdown</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.colors.secondary }}></div>
+                  <span className="text-sm">Subscription Intelligence</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.colors.secondary }}></div>
+                  <span className="text-sm">Temporal Viewing Patterns</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        <section className="container mx-auto px-6 py-20">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h3 className="text-4xl font-black tracking-widest mb-4">EXPANSION ROADMAP</h3>
             <div
               className="w-32 h-1 mx-auto mb-6 rounded-full"
               style={{
@@ -203,22 +314,22 @@ export function LandingPage() {
             {[
               {
                 icon: Database,
-                title: 'PHASE 1: SPOTIFY MVP',
+                title: 'PHASE 1: COMPLETE ✓',
                 points: [
-                  'Listening history analysis',
+                  'Spotify listening analysis',
                   'Exploration index computation',
                   'Temporal pattern detection',
                   'Genre diversity metrics'
                 ]
               },
               {
-                icon: TrendingUp,
-                title: 'PHASE 2: EXPANSION',
+                icon: Youtube,
+                title: 'PHASE 2: LIVE NOW ✓',
                 points: [
-                  'YouTube watch patterns',
-                  'GitHub contribution analysis',
-                  'Reading habits (Goodreads)',
-                  'Financial behavior (Mint)'
+                  'YouTube content analysis',
+                  'Cross-platform intelligence',
+                  'Subscription health tracking',
+                  'Intellectual diet insights'
                 ]
               },
               {
