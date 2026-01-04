@@ -449,7 +449,7 @@ export function SetupPage({ onSetupComplete }: { onSetupComplete: () => void }) 
         <footer className="container mx-auto px-6 py-12 text-center border-t-2" style={{ borderColor: `${currentTheme.colors.border}20` }}>
           <p className="text-xs tracking-widest font-black mb-4" style={{ color: currentTheme.colors.primary }}>━━━━━━━━━━━━━━━━━━━</p>
           <p className="text-sm" style={{ color: currentTheme.colors.textSecondary }}>
-            CapsuleOS © 2024 • Secure by Design • Deterministic Intelligence
+            CapsuleOS © 2026 • Secure by Design • Deterministic Intelligence
           </p>
         </footer>
       </div>
