@@ -26,8 +26,11 @@ Deno.serve(async (req: Request) => {
     );
 
     const { userId, code, action } = await req.json();
+    console.log("Request params:", { userId, hasCode: !!code, action });
 
     if (action === "callback" && code) {
+      console.log("Processing callback for user:", userId);
+
       const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
         headers: {
@@ -43,24 +46,15 @@ Deno.serve(async (req: Request) => {
       });
 
       if (!tokenResponse.ok) {
-        throw new Error("Failed to exchange code for tokens");
+        const errorText = await tokenResponse.text();
+        console.error("Google token exchange failed:", errorText);
+        throw new Error(`Failed to exchange code for tokens: ${errorText}`);
       }
 
       const tokens = await tokenResponse.json();
+      console.log("Got tokens from Google, expires_in:", tokens.expires_in);
 
-      // First check if user exists
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (userError || !userData) {
-        console.error("User not found:", userId, userError);
-        throw new Error("User not found");
-      }
-
-      // Upsert the token
+      // Upsert the token directly (service role bypasses RLS)
       const { error } = await supabase
         .from("integration_tokens")
         .upsert({
@@ -75,9 +69,11 @@ Deno.serve(async (req: Request) => {
         });
 
       if (error) {
-        console.error("Database upsert error:", error);
-        throw error;
+        console.error("Database upsert error:", JSON.stringify(error, null, 2));
+        throw new Error(`Database error: ${error.message}`);
       }
+
+      console.log("Successfully stored tokens for user:", userId);
 
       return new Response(
         JSON.stringify({ success: true }),
@@ -110,8 +106,12 @@ Deno.serve(async (req: Request) => {
     );
   } catch (error) {
     console.error("YouTube auth error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : String(error)
+      }),
       {
         status: 500,
         headers: {
